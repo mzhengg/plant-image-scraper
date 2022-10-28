@@ -1,5 +1,7 @@
 import time
 
+import requests
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -28,6 +30,7 @@ def image_links_scraper(link):
             #current_height = new_height # otherwise, we need to keep scrolling
 
     elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]") # finds all elements where the 'id' tag starts with the string 'cover'
+    
     for element in elements:
         s = element.get_attribute('style') # returns the text in the 'style' attribute
         start = 'width: 100%; min-height: 183px; background-size: cover; background-position: center center; background-repeat: no-repeat; background-image: url("' # first part of the useless substring
@@ -35,9 +38,21 @@ def image_links_scraper(link):
         link = s[len(start):-len(end)] # gets the URL in the string
         image_links.append(link) # add the image link to the list
         print(link)
-    
+
     return image_links
+
+def download_images(image_links):
+    i = 1
+    for link in image_links:
+        r = requests.get(link).content
+        file_name = f'images/{i}.jpg'
+
+        with open(file_name, 'wb') as f:
+            f.write(r)
+        
+        i += 1
 
 if __name__ == '__main__':
     link = 'https://www.inaturalist.org/taxa/52083-Toxicodendron-pubescens/browse_photos?layout=grid' # website to scrape images
-    image_links_scraper(link)
+    image_links = image_links_scraper(link)
+    download_images(image_links)
