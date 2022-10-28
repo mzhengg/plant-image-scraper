@@ -8,7 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium.webdriver.common.by import By
 
-def image_links_scraper(link):
+def image_links_scraper(link, max_images):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install())) # initializes driver and installs chromedriver
     driver.get(link) # go to the website 
 
@@ -19,6 +19,11 @@ def image_links_scraper(link):
     while True: # keep scrolling until we reach the end of the page
         driver.execute_script(f"window.scrollTo({current_height}, document.body.scrollHeight);") # scroll
 
+        elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]") # finds all elements where the 'id' tag starts with the string 'cover'
+
+        if len(elements) >= max_images: # stop scolling if we have scraped enough image links
+            break
+
         time.sleep(5) # wait for page to load
 
         new_height = driver.execute_script("return document.body.scrollHeight") # get new height after scroll
@@ -28,8 +33,6 @@ def image_links_scraper(link):
         else:
             current_height = new_height # otherwise, we need to keep scrolling
 
-    elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]") # finds all elements where the 'id' tag starts with the string 'cover'
-    
     for element in elements:
         s = element.get_attribute('style') # returns the text in the 'style' attribute
         start = 'width: 100%; min-height: 183px; background-size: cover; background-position: center center; background-repeat: no-repeat; background-image: url("' # first part of the useless substring
@@ -40,11 +43,11 @@ def image_links_scraper(link):
 
     return image_links
 
-def download_images(image_links):
+def download_images(image_links, folder_name):
     i = 1 # keep track of the image number
     for link in image_links: # iterate through all the image links
         r = requests.get(link).content # retrieve the image content from URL
-        file_name = f'images/{i}.jpg' # generate image file name
+        file_name = f'{folder_name}/{i}.jpg' # generate image file name and directory
 
         with open(file_name, 'wb') as f:
             f.write(r) # save the image
@@ -53,5 +56,7 @@ def download_images(image_links):
 
 if __name__ == '__main__':
     link = 'https://www.inaturalist.org/taxa/52083-Toxicodendron-pubescens/browse_photos?layout=grid' # website to scrape images
-    image_links = image_links_scraper(link)
-    download_images(image_links)
+    max_images = 1000
+    folder_name = 'images'
+    image_links = image_links_scraper(link, max_images)
+    download_images(image_links, folder_name)
