@@ -26,8 +26,7 @@ def image_links_scraper(link):
         if current_height == new_height: # check if the height has stopped changing
             break # if so, we've maxed out and need to stop
         else:
-            break
-            #current_height = new_height # otherwise, we need to keep scrolling
+            current_height = new_height # otherwise, we need to keep scrolling
 
     elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]") # finds all elements where the 'id' tag starts with the string 'cover'
     
@@ -42,15 +41,15 @@ def image_links_scraper(link):
     return image_links
 
 def download_images(image_links):
-    i = 1
-    for link in image_links:
-        r = requests.get(link).content
-        file_name = f'images/{i}.jpg'
+    i = 1 # keep track of the image number
+    for link in image_links: # iterate through all the image links
+        r = requests.get(link).content # retrieve the image content from URL
+        file_name = f'images/{i}.jpg' # generate image file name
 
         with open(file_name, 'wb') as f:
-            f.write(r)
+            f.write(r) # save the image
         
-        i += 1
+        i += 1 # update the image number for the next iteration
 
 if __name__ == '__main__':
     link = 'https://www.inaturalist.org/taxa/52083-Toxicodendron-pubescens/browse_photos?layout=grid' # website to scrape images
