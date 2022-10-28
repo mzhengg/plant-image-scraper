@@ -6,22 +6,28 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium.webdriver.common.by import By
 
-link = 'https://www.inaturalist.org/taxa/52083-Toxicodendron-pubescens/browse_photos?layout=grid'
+def image_links_scraper(link):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install())) # initializes driver and installs chromedriver
+    driver.get(link) # go to the website 
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    image_links = [] # list of links to the images
 
-driver.get(link)
+    current_height = driver.execute_script("return document.body.scrollHeight") # get the starting heigh
 
-current_height = driver.execute_script("return document.body.scrollHeight") # get the starting heigh
+    while True: # keep scrolling until we reach the end of the page
+        driver.execute_script(f"window.scrollTo({current_height}, document.body.scrollHeight);") # scroll
 
-while True:
-    driver.execute_script(f"window.scrollTo({current_height}, document.body.scrollHeight);") # scroll
+        time.sleep(2) # wait for page to load
 
-    time.sleep(10)
+        new_height = driver.execute_script("return document.body.scrollHeight") # get new height after scroll
 
-    new_height = driver.execute_script("return document.body.scrollHeight") # get new height after scroll
+        if current_height == new_height: # check if the height has stopped changing
+            break # if so, we've maxed out and need to stop
+        else:
+            current_height = new_height # otherwise, we need to keep scrolling
+    
+    return image_links
 
-    if current_height == new_height: # check if the height has stopped changing
-        break # if so, we've maxed out and need to stop
-    else:
-        current_height = new_height # otherwise, we need to keep scrolling
+if __name__ == '__main__':
+    link = 'https://www.inaturalist.org/taxa/52083-Toxicodendron-pubescens/browse_photos?layout=grid' # website to scrape images
+    image_links_scraper(link)
