@@ -1,5 +1,4 @@
 import time
-from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -28,10 +27,13 @@ def image_links_scraper(link):
             break
             #current_height = new_height # otherwise, we need to keep scrolling
 
-    elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]")
+    elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]") # finds all elements where the 'id' tag starts with the string 'cover'
     for element in elements:
-        link = element.get_attribute('style')
-        image_links.append(link)
+        s = element.get_attribute('style') # returns the text in the 'style' attribute
+        start = 'width: 100%; min-height: 183px; background-size: cover; background-position: center center; background-repeat: no-repeat; background-image: url("' # first part of the useless substring
+        end = '");' # second part of the useless substring
+        link = s[len(start):-len(end)] # gets the URL in the string
+        image_links.append(link) # add the image link to the list
         print(link)
     
     return image_links
