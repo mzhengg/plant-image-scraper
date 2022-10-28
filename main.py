@@ -1,4 +1,5 @@
 import time
+from bs4 import BeautifulSoup
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -17,14 +18,21 @@ def image_links_scraper(link):
     while True: # keep scrolling until we reach the end of the page
         driver.execute_script(f"window.scrollTo({current_height}, document.body.scrollHeight);") # scroll
 
-        time.sleep(2) # wait for page to load
+        time.sleep(5) # wait for page to load
 
         new_height = driver.execute_script("return document.body.scrollHeight") # get new height after scroll
 
         if current_height == new_height: # check if the height has stopped changing
             break # if so, we've maxed out and need to stop
         else:
-            current_height = new_height # otherwise, we need to keep scrolling
+            break
+            #current_height = new_height # otherwise, we need to keep scrolling
+
+    elements = driver.find_elements(By.XPATH, "//*[starts-with(@id, 'cover')]")
+    for element in elements:
+        link = element.get_attribute('style')
+        image_links.append(link)
+        print(link)
     
     return image_links
 
